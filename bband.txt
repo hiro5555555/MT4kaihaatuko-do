@@ -1,0 +1,33 @@
+
+input int BPeriod = 10;  //ボリンジャーバンドの期間
+input double BDev = 2.0; //標準偏差の倍率
+input double Lots = 0.1; //売買ロット数
+
+//ティック時実行関数
+void OnTick()
+{
+   int signal_entry = EntrySignal(); //仕掛けシグナル
+   //成行売買
+   OrderSendMarket(signal_entry, signal_entry_entry, Lots);
+}
+
+
+
+//仕掛けシグナル関数
+int EntrySignal()
+{
+   //１本前と２本前のボリンジャーバンド
+   double BUpper1 = iBands(_Symbol, 0, BPeriod, BDev, 0, PRICE_CLOSE, MODE_UPPER, 1);
+   double BLower1 = iBands(_Symbol, 0, BPeriod, BDev, 0, PRICE_CLOSE, MODE_LOWER, 1);
+   double BUpper2 = iBands(_Symbol, 0, BPeriod, BDev, 0, PRICE_CLOSE, MODE_UPPER, 2);
+   double BLower2 = iBands(_Symbol, 0, BPeriod, BDev, 0, PRICE_CLOSE, MODE_LOWER, 2);
+
+   int ret = 0; //シグナルの初期化
+
+   //買いシグナル
+   if(Close[2] >= BLower2 && Close[1] < BLower1) ret = 1;
+   //売りシグナル
+   if(Close[2] <= BUpper2 && Close[1] > BUpper1) ret = -1;
+
+   return ret; //シグナルの出力
+}
